@@ -15,7 +15,7 @@ from myhdl import *
 from defines import *
 from functions import *
 from dsram import *
-from debug import *
+#from debug import *
 
 def GPRF(
         clock,

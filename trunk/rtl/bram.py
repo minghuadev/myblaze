@@ -56,7 +56,6 @@ def BRAM(
     """
     max = 2**size
     ram = RAM(Signal(intbv(0)[width:]) for i in range(max))
-    #read_addr = Signal(intbv(0)[len(address):])
     if filename:
         init = BRAMInitial(ram, filename, clock)
 
@@ -66,10 +65,6 @@ def BRAM(
             if write:
                 ram[int(address)].next = data_in
             data_out.next = ram[int(address)%max]
-            #read_addr.next = address
-    #@always_comb
-    #def output():
-        #data_out.next = ram[int(read_addr)]
 
     return instances()
 
@@ -88,7 +83,7 @@ def BankedBRAM(
         ):
     # XXX: Verilog just don't allow dynamic register slicing
     # have to fix ram shape to 4x8bit
-    if to_verilog == 1:
+    if to_verilog:
         width=32
         bank_size=2
     bank_count = 2 ** bank_size
@@ -113,28 +108,12 @@ def BankedBRAM(
 
                     for i in range(bank_count)]
         
-    
-    #@always(clock.posedge)
-    #def debug():
-        #if enable and address==0x17f4:
-            #print 'XXXXXX 17f4',
-            #if write:
-                #print 'WRITE %x' % int(data_in)
-            #else:
-                #print 'READ %x' % int(data_out)
-
-    if to_verilog == 1:
+    if to_verilog:
         @always_comb
-        def dumbass_reassemble():
+        def reassemble():
             bank_addr.next = address[:bank_size]
             for i in range(bank_count):
                 bank_wre[i].next = write[i]
-            #bank_in[3].next = data_in[8:]
-            #bank_in[2].next = data_in[16:8]
-            #bank_in[1].next = data_in[24:16]
-            #bank_in[0].next = data_in[32:24]
-            #data_out.next = concat(bank_out[0], bank_out[1],
-                                   #bank_out[2], bank_out[3])
             bank_in[0].next = data_in[8:]
             bank_in[1].next = data_in[16:8]
             bank_in[2].next = data_in[24:16]
@@ -142,20 +121,20 @@ def BankedBRAM(
             data_out.next = concat(bank_out[3], bank_out[2],
                                    bank_out[1], bank_out[0])
             
-    #else:
-        #@always_comb
-        #def reassemble():
-            #bank_addr.next = address[:bank_size]
-            #tmp = intbv(0)[width:]
-            #tmp_low = intbv(0)[width-bank_width:]
-            #for i in range(bank_count):
-                #bank_wre[i].next = write[i]
-                #bank_in[i].next = data_in[(i+1)*bank_width:i*bank_width]
-                #tmp_low[:] = tmp[:bank_width]
-                #tmp[:] = concat(bank_out[i], tmp_low)
-            #data_out.next = tmp
+    else:
+        @always_comb
+        def reassemble():
+            bank_addr.next = address[:bank_size]
+            tmp = intbv(0)[width:]
+            tmp_low = intbv(0)[width-bank_width:]
+            for i in range(bank_count):
+                bank_wre[i].next = write[i]
+                bank_in[i].next = data_in[(i+1)*bank_width:i*bank_width]
+                tmp_low[:] = tmp[:bank_width]
+                tmp[:] = concat(bank_out[i], tmp_low)
+            data_out.next = tmp
 
-    return instances()
+    return bank, reassemble
 
 if __name__ == '__main__':
     data_out = Signal(intbv(0)[32:])
@@ -178,7 +157,6 @@ if __name__ == '__main__':
         filename='rom.vmem',
     )
     kw = dict(
-        func=BankedBRAM,
         data_out=data_out,
         data_in=data_in,
         address=address,
@@ -188,11 +166,11 @@ if __name__ == '__main__':
         width=32,
         bank_size=2,
         size=8,
-        filename='rom.vmem',
+        filename_pattern='rom%d.vmem',
     )
-    toVerilog(to_verilog=True, **kw)
-    toVerilog(**bram_kw)
-    toVHDL(**kw)
+    toVerilog(BankedBRAM, to_verilog=True, **kw)
+    #toVerilog(**bram_kw)
+    toVHDL(BankedBRAM, **kw)
 
 ### EOF ###
 # vim:smarttab:sts=4:ts=4:sw=4:et:ai:tw=80:

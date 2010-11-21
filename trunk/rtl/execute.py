@@ -14,7 +14,6 @@
 from myhdl import *
 from defines import *
 from functions import *
-from debug import *
 
 def ExecuteUnit(
         # Inputs
@@ -66,17 +65,13 @@ def ExecuteUnit(
         ex_program_counter,
         ex_transfer_size,
 
-        # Generic Parameters
-        #CFG_IMEM_SIZE=16,
-        #CFG_DMEM_WIDTH=32,
-
-        # XXX: if __debug__:
-        #of_instruction,
-        #ex_dat_a,
-        #ex_dat_b,
-        #ex_instruction,
-        #ex_reg_a,
-        #ex_reg_b,
+        # Ports only for debug
+        of_instruction=0,
+        ex_dat_a=0,
+        ex_dat_b=0,
+        ex_instruction=0,
+        ex_reg_a=0,
+        ex_reg_b=0,
 
     ):
     """
@@ -84,31 +79,31 @@ def ExecuteUnit(
     ex_r_carry = Signal(False)
     ex_r_flush_ex= Signal(False)
 
-    ex_r_alu_result = Signal(intbv(0)[32:])
-    ex_r_reg_d = Signal(intbv(0)[5:])
+    ex_r_alu_result = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+    ex_r_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     ex_r_reg_write = Signal(False)
 
     ex_comb_r_carry = Signal(False)
     ex_comb_r_flush_ex = Signal(False)
 
-    ex_comb_r_alu_result = Signal(intbv(0)[32:])
-    ex_comb_r_reg_d = Signal(intbv(0)[5:])
+    ex_comb_r_alu_result = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+    ex_comb_r_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     ex_comb_r_reg_write = Signal(False)
 
     ex_comb_branch = Signal(False)
-    ex_comb_dat_d = Signal(intbv(0)[32:])
+    ex_comb_dat_d = Signal(intbv(0)[CFG_DMEM_WIDTH:])
     ex_comb_flush_id = Signal(False)
     ex_comb_mem_read = Signal(False)
     ex_comb_mem_write = Signal(False)
     ex_comb_program_counter = Signal(intbv(0)[CFG_IMEM_SIZE:])
     ex_comb_transfer_size = Signal(transfer_size_type.WORD)
 
-    #if __debug__:
-        #ex_comb_dat_a = Signal(intbv(0)[CFG_DMEM_WIDTH:])
-        #ex_comb_dat_b = Signal(intbv(0)[CFG_DMEM_WIDTH:])
-        #ex_comb_instruction = Signal(intbv(0)[CFG_DMEM_WIDTH:])
-        #ex_comb_reg_a = Signal(intbv(0)[5:])
-        #ex_comb_reg_b = Signal(intbv(0)[5:])
+    if __debug__:
+        ex_comb_dat_a = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+        ex_comb_dat_b = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+        ex_comb_instruction = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+        ex_comb_reg_a = Signal(intbv(0)[CFG_GPRF_SIZE:])
+        ex_comb_reg_b = Signal(intbv(0)[CFG_GPRF_SIZE:])
 
     @always_comb
     def regout():
@@ -119,16 +114,19 @@ def ExecuteUnit(
     cpu_clock = 0
     @always(clock.posedge)
     def seq():
+        """
+        ExecUnit sequential logic
+        """
         if reset:
             ex_r_carry.next = False
             ex_r_flush_ex.next = False
 
-            ex_r_alu_result.next = intbv(0)[32:]
-            ex_r_reg_d.next = intbv(0)[5:]
+            ex_r_alu_result.next = intbv(0)[CFG_DMEM_WIDTH:]
+            ex_r_reg_d.next = intbv(0)[CFG_GPRF_SIZE:]
             ex_r_reg_write.next = False
 
             ex_branch.next = False
-            ex_dat_d.next = intbv(0)[32:]
+            ex_dat_d.next = intbv(0)[CFG_DMEM_WIDTH:]
             ex_flush_id.next = False
             ex_mem_read.next = False
             ex_mem_write.next = False
@@ -151,22 +149,25 @@ def ExecuteUnit(
             ex_program_counter.next = ex_comb_program_counter
             ex_transfer_size.next = ex_comb_transfer_size
 
-        #if __debug__:
-          #if enable:
-            #ex_dat_a.next = ex_comb_dat_a
-            #ex_dat_b.next = ex_comb_dat_b
-            #ex_instruction.next = ex_comb_instruction
-            #ex_reg_a.next = ex_comb_reg_a
-            #ex_reg_b.next = ex_comb_reg_b
+        if __debug__:
+          if enable:
+            ex_dat_a.next = ex_comb_dat_a
+            ex_dat_b.next = ex_comb_dat_b
+            ex_instruction.next = ex_comb_instruction
+            ex_reg_a.next = ex_comb_reg_a
+            ex_reg_b.next = ex_comb_reg_b
 
     @always_comb
     def comb():
+        """
+        ExecUnit combinatorial logic
+        """
         # Signals mapping
         r_carry = False
         r_flush_ex = False
 
         r_alu_result = intbv(0)[CFG_DMEM_WIDTH:]
-        r_reg_d = intbv(0)[5:]
+        r_reg_d = intbv(0)[CFG_GPRF_SIZE:]
         r_reg_write = False
 
         branch = False
@@ -325,8 +326,8 @@ def ExecuteUnit(
                                                   #16, CFG_DMEM_WIDTH))
         else:
             result[:] = 0
-            #if __debug__:
-                #assert False, 'FATAL Error: Unsupported ALU operation'
+            if __debug__:
+                assert False, 'FATAL Error: Unsupported ALU operation'
 
         # Set carry register
         if of_carry_keep:
@@ -356,7 +357,7 @@ def ExecuteUnit(
 
         # Handle CMPU
         cmp_cond = alu_src_a[CFG_DMEM_WIDTH-1] ^ alu_src_b[CFG_DMEM_WIDTH-1] 
-        if of_operation and cmp_cond:
+        if of_operation and bool(cmp_cond):
             ## Set MSB
             msb = alu_src_a[CFG_DMEM_WIDTH-1]
             r_alu_result[:] = concat(msb, result[CFG_DMEM_WIDTH-1:])
@@ -385,12 +386,12 @@ def ExecuteUnit(
         ex_comb_program_counter.next = program_counter
         ex_comb_transfer_size.next = transfer_size
             
-        #if __debug__:
-        #ex_comb_dat_a.next = dat_a
-        #ex_comb_dat_b.next = dat_b
-        #ex_comb_instruction.next = of_instruction
-        #ex_comb_reg_a.next = of_reg_a
-        #ex_comb_reg_b.next = of_reg_b
+        if __debug__:
+            ex_comb_dat_a.next = dat_a
+            ex_comb_dat_b.next = dat_b
+            ex_comb_instruction.next = of_instruction
+            ex_comb_reg_a.next = of_reg_a
+            ex_comb_reg_b.next = of_reg_b
 
     return instances()
 
@@ -399,17 +400,17 @@ if __name__ == '__main__':
     reset = Signal(False)
     enable = Signal(False)
 
-    dmem_data_in = Signal(intbv(0)[32:])
+    dmem_data_in = Signal(intbv(0)[CFG_DMEM_WIDTH:])
 
-    mm_alu_result = Signal(intbv(0)[32:])
+    mm_alu_result = Signal(intbv(0)[CFG_DMEM_WIDTH:])
     mm_mem_read =  Signal(False)
-    mm_reg_d = Signal(intbv(0)[5:])
+    mm_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     mm_reg_write = Signal(False)
     mm_transfer_size = Signal(transfer_size_type.WORD)
 
-    gprf_dat_a = Signal(intbv(0)[32:])
-    gprf_dat_b = Signal(intbv(0)[32:])
-    gprf_dat_d = Signal(intbv(0)[32:])
+    gprf_dat_a = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+    gprf_dat_b = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+    gprf_dat_d = Signal(intbv(0)[CFG_DMEM_WIDTH:])
 
     ex_flush_id = Signal(False)
     of_alu_op = Signal(alu_operation.ALU_ADD)
@@ -420,23 +421,27 @@ if __name__ == '__main__':
     of_carry_keep = Signal(False)
     of_delay = Signal(False)
     of_hazard = Signal(False)
-    of_immediate = Signal(intbv(0)[32:])
+    of_immediate = Signal(intbv(0)[CFG_DMEM_WIDTH:])
     of_mem_read = Signal(False)
     of_mem_write = Signal(False)
     of_operation = Signal(False)
     of_program_counter = Signal(intbv(0)[CFG_IMEM_SIZE:])
-    of_reg_a = Signal(intbv(0)[5:])
-    of_reg_b = Signal(intbv(0)[5:])
-    of_reg_d = Signal(intbv(0)[5:])
+    of_reg_a = Signal(intbv(0)[CFG_GPRF_SIZE:])
+    of_reg_b = Signal(intbv(0)[CFG_GPRF_SIZE:])
+    of_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     of_reg_write = Signal(False)
     of_transfer_size = Signal(transfer_size_type.WORD)
+    # Write back stage forwards
+    of_fwd_mem_result = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+    of_fwd_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
+    of_fwd_reg_write = Signal(False)
 
-    ex_alu_result = Signal(intbv(0)[32:])
-    ex_reg_d = Signal(intbv(0)[5:])
+    ex_alu_result = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+    ex_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     ex_reg_write = Signal(False)
 
     ex_branch = Signal(False)
-    ex_dat_d = Signal(intbv(0)[32:])
+    ex_dat_d = Signal(intbv(0)[CFG_DMEM_WIDTH:])
     ex_flush_id = Signal(False)
     ex_mem_read = Signal(False)
     ex_mem_write = Signal(False)
@@ -444,7 +449,6 @@ if __name__ == '__main__':
     ex_transfer_size = Signal(transfer_size_type.WORD)
     
     kw = dict(
-        func=ExecuteUnit,
         clock=clock,
         reset=reset,
         enable=enable,
@@ -474,6 +478,10 @@ if __name__ == '__main__':
         of_reg_d=of_reg_d,
         of_reg_write=of_reg_write,
         of_transfer_size=of_transfer_size,
+        # Write back stage forwards
+        of_fwd_mem_result=of_fwd_mem_result,
+        of_fwd_reg_d=of_fwd_reg_d,
+        of_fwd_reg_write=of_fwd_reg_write,
         # Outputs
         ex_alu_result=ex_alu_result,
         ex_reg_d=ex_reg_d,
@@ -487,8 +495,8 @@ if __name__ == '__main__':
         ex_program_counter=ex_program_counter,
         ex_transfer_size=ex_transfer_size,
     )
-    toVerilog(**kw)
-    toVHDL(**kw)
+    toVerilog(ExecuteUnit, **kw)
+    toVHDL(ExecuteUnit, **kw)
 
 ### EOF ###
 # vim:smarttab:sts=4:ts=4:sw=4:et:ai:tw=80:

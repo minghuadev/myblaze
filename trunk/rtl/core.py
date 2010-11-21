@@ -35,66 +35,70 @@ def MyBlazeCore(
         imem_addr_out,
         imem_ena_out,
 
-        # if __debug__:
-        #debug_if_program_counter,
+        # Ports only for debug
+        debug_if_program_counter=0,
 
-        #debug_of_alu_op,
-        #debug_of_alu_src_a,
-        #debug_of_alu_src_b,
-        #debug_of_branch_cond,
-        #debug_of_carry,
-        #debug_of_carry_keep,
-        #debug_of_delay,
-        #debug_of_hazard,
-        #debug_of_immediate,
-        #debug_of_instruction,
-        #debug_of_mem_read,
-        #debug_of_mem_write,
-        #debug_of_operation,
-        #debug_of_program_counter,
-        #debug_of_reg_a,
-        #debug_of_reg_b,
-        #debug_of_reg_d,
-        #debug_of_reg_write,
-        #debug_of_transfer_size,
+        debug_of_alu_op=0,
+        debug_of_alu_src_a=0,
+        debug_of_alu_src_b=0,
+        debug_of_branch_cond=0,
+        debug_of_carry=0,
+        debug_of_carry_keep=0,
+        debug_of_delay=0,
+        debug_of_hazard=0,
+        debug_of_immediate=0,
+        debug_of_instruction=0,
+        debug_of_mem_read=0,
+        debug_of_mem_write=0,
+        debug_of_operation=0,
+        debug_of_program_counter=0,
+        debug_of_reg_a=0,
+        debug_of_reg_b=0,
+        debug_of_reg_d=0,
+        debug_of_reg_write=0,
+        debug_of_transfer_size=0,
 
-        #debug_of_fwd_mem_result,
-        #debug_of_fwd_reg_d,
-        #debug_of_fwd_reg_write,
+        debug_of_fwd_mem_result=0,
+        debug_of_fwd_reg_d=0,
+        debug_of_fwd_reg_write=0,
 
-        #debug_gprf_dat_a,
-        #debug_gprf_dat_b,
-        #debug_gprf_dat_d,
+        debug_gprf_dat_a=0,
+        debug_gprf_dat_b=0,
+        debug_gprf_dat_d=0,
 
-        #debug_ex_alu_result,
-        #debug_ex_reg_d,
-        #debug_ex_reg_write,
+        debug_ex_alu_result=0,
+        debug_ex_reg_d=0,
+        debug_ex_reg_write=0,
 
-        #debug_ex_branch,
-        #debug_ex_dat_d,
-        #debug_ex_flush_id,
-        #debug_ex_mem_read,
-        #debug_ex_mem_write,
-        #debug_ex_program_counter,
-        #debug_ex_transfer_size,
+        debug_ex_branch=0,
+        debug_ex_dat_d=0,
+        debug_ex_flush_id=0,
+        debug_ex_mem_read=0,
+        debug_ex_mem_write=0,
+        debug_ex_program_counter=0,
+        debug_ex_transfer_size=0,
 
-        #debug_ex_dat_a,
-        #debug_ex_dat_b,
-        #debug_ex_instruction,
-        #debug_ex_reg_a,
-        #debug_ex_reg_b,
+        debug_ex_dat_a=0,
+        debug_ex_dat_b=0,
+        debug_ex_instruction=0,
+        debug_ex_reg_a=0,
+        debug_ex_reg_b=0,
 
-        #debug_mm_alu_result,
-        #debug_mm_mem_read,
-        #debug_mm_reg_d,
-        #debug_mm_reg_write,
-        #debug_mm_transfer_size,
+        debug_mm_alu_result=0,
+        debug_mm_mem_read=0,
+        debug_mm_reg_d=0,
+        debug_mm_reg_write=0,
+        debug_mm_transfer_size=0,
+
+        DEBUG=True,
         ):
     """
     """
-    #of_instruction = Signal(False)
-    #if __debug__:
-        #of_instruction = Signal(intbv(0)[CFG_IMEM_WIDTH:])
+    # Ports only for debug
+    of_instruction = 0
+    if __debug__:
+        of_instruction = Signal(intbv(0)[CFG_IMEM_WIDTH:])
+    # End Ports only for debug
 
     if_program_counter = Signal(intbv(0)[CFG_IMEM_SIZE:])
 
@@ -115,19 +119,19 @@ def MyBlazeCore(
     of_mem_write = Signal(False)
     of_operation = Signal(False)
     of_program_counter = Signal(intbv(0)[CFG_IMEM_SIZE:])
-    of_reg_a = Signal(intbv(0)[5:])
-    of_reg_b = Signal(intbv(0)[5:])
-    of_reg_d = Signal(intbv(0)[5:])
+    of_reg_a = Signal(intbv(0)[CFG_GPRF_SIZE:])
+    of_reg_b = Signal(intbv(0)[CFG_GPRF_SIZE:])
+    of_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     of_reg_write = Signal(False)
     of_transfer_size = Signal(transfer_size_type.WORD)
 
     # Write back stage forwards
     of_fwd_mem_result = Signal(intbv(0)[CFG_DMEM_WIDTH:])
-    of_fwd_reg_d = Signal(intbv(0)[5:])
+    of_fwd_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     of_fwd_reg_write = Signal(False)
 
     ex_alu_result = Signal(intbv(0)[CFG_DMEM_WIDTH:])
-    ex_reg_d = Signal(intbv(0)[5:])
+    ex_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     ex_reg_write = Signal(False)
 
     ex_branch = Signal(False)
@@ -138,16 +142,23 @@ def MyBlazeCore(
     ex_program_counter = Signal(intbv(0)[CFG_IMEM_SIZE:])
     ex_transfer_size = Signal(transfer_size_type.WORD)
 
-    # if __debug__:
-    #ex_dat_a = Signal(intbv(0)[CFG_DMEM_WIDTH:])
-    #ex_dat_b = Signal(intbv(0)[CFG_DMEM_WIDTH:])
-    #ex_instruction = Signal(intbv(0)[CFG_DMEM_WIDTH:])
-    #ex_reg_a = Signal(intbv(0)[5:])
-    #ex_reg_b = Signal(intbv(0)[5:])
+    # Ports only for debug
+    ex_dat_a = 0
+    ex_dat_b = 0
+    ex_instruction = 0
+    ex_reg_a = 0
+    ex_reg_b = 0
+    if __debug__:
+        ex_dat_a = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+        ex_dat_b = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+        ex_instruction = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+        ex_reg_a = Signal(intbv(0)[CFG_GPRF_SIZE:])
+        ex_reg_b = Signal(intbv(0)[CFG_GPRF_SIZE:])
+    # End Ports only for debug
 
     mm_alu_result = Signal(intbv(0)[CFG_DMEM_WIDTH:])
     mm_mem_read = Signal(False)
-    mm_reg_d = Signal(intbv(0)[5:])
+    mm_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     mm_reg_write = Signal(False)
     mm_transfer_size = Signal(transfer_size_type.WORD)
     
@@ -203,8 +214,8 @@ def MyBlazeCore(
         of_fwd_reg_d=of_fwd_reg_d,
         of_fwd_reg_write=of_fwd_reg_write,
 
-        # if __debug__:
-        #of_instruction=of_instruction,
+        # Ports only for debug
+        of_instruction=of_instruction,
         
     )
 
@@ -258,13 +269,13 @@ def MyBlazeCore(
         ex_program_counter=ex_program_counter,
         ex_transfer_size=ex_transfer_size,
 
-        # if __debug__
-        #of_instruction=of_instruction,
-        #ex_dat_a=ex_dat_a,
-        #ex_dat_b=ex_dat_b,
-        #ex_instruction=ex_instruction,
-        #ex_reg_a=ex_reg_a,
-        #ex_reg_b=ex_reg_b,
+        # Ports only for debug
+        of_instruction=of_instruction,
+        ex_dat_a=ex_dat_a,
+        ex_dat_b=ex_dat_b,
+        ex_instruction=ex_instruction,
+        ex_reg_a=ex_reg_a,
+        ex_reg_b=ex_reg_b,
     )
 
     memu = MemUnit(
@@ -294,63 +305,65 @@ def MyBlazeCore(
         dmem_ena_out=dmem_ena_out,
     )
 
-    #@always_comb
-    #def debug_output():
-        #debug_if_program_counter.next = if_program_counter
+    @always_comb
+    def debug_output():
+        debug_if_program_counter.next = if_program_counter
 
-        #debug_of_alu_op.next = of_alu_op
-        #debug_of_alu_src_a.next = of_alu_src_a
-        #debug_of_alu_src_b.next = of_alu_src_b
-        #debug_of_branch_cond.next = of_branch_cond
-        #debug_of_carry.next = of_carry
-        #debug_of_carry_keep.next = of_carry_keep
-        #debug_of_delay.next = of_delay
-        #debug_of_hazard.next = of_hazard
-        #debug_of_immediate.next = of_immediate
-        #debug_of_instruction.next = of_instruction
-        #debug_of_mem_read.next = of_mem_read
-        #debug_of_mem_write.next = of_mem_write
-        #debug_of_operation.next = of_operation
-        #debug_of_program_counter.next = of_program_counter
-        #debug_of_reg_a.next = of_reg_a
-        #debug_of_reg_b.next = of_reg_b
-        #debug_of_reg_d.next = of_reg_d
-        #debug_of_reg_write.next = of_reg_write
-        #debug_of_transfer_size.next = of_transfer_size
+        debug_of_alu_op.next = of_alu_op
+        debug_of_alu_src_a.next = of_alu_src_a
+        debug_of_alu_src_b.next = of_alu_src_b
+        debug_of_branch_cond.next = of_branch_cond
+        debug_of_carry.next = of_carry
+        debug_of_carry_keep.next = of_carry_keep
+        debug_of_delay.next = of_delay
+        debug_of_hazard.next = of_hazard
+        debug_of_immediate.next = of_immediate
+        debug_of_instruction.next = of_instruction
+        debug_of_mem_read.next = of_mem_read
+        debug_of_mem_write.next = of_mem_write
+        debug_of_operation.next = of_operation
+        debug_of_program_counter.next = of_program_counter
+        debug_of_reg_a.next = of_reg_a
+        debug_of_reg_b.next = of_reg_b
+        debug_of_reg_d.next = of_reg_d
+        debug_of_reg_write.next = of_reg_write
+        debug_of_transfer_size.next = of_transfer_size
 
-        #debug_of_fwd_mem_result.next = of_fwd_mem_result
-        #debug_of_fwd_reg_d.next = of_fwd_reg_d
-        #debug_of_fwd_reg_write.next = of_fwd_reg_write
+        debug_of_fwd_mem_result.next = of_fwd_mem_result
+        debug_of_fwd_reg_d.next = of_fwd_reg_d
+        debug_of_fwd_reg_write.next = of_fwd_reg_write
 
-        #debug_gprf_dat_a.next = gprf_dat_a
-        #debug_gprf_dat_b.next = gprf_dat_b
-        #debug_gprf_dat_d.next = gprf_dat_d
+        debug_gprf_dat_a.next = gprf_dat_a
+        debug_gprf_dat_b.next = gprf_dat_b
+        debug_gprf_dat_d.next = gprf_dat_d
 
-        #debug_ex_alu_result.next = ex_alu_result
-        #debug_ex_reg_d.next = ex_reg_d
-        #debug_ex_reg_write.next = ex_reg_write
+        debug_ex_alu_result.next = ex_alu_result
+        debug_ex_reg_d.next = ex_reg_d
+        debug_ex_reg_write.next = ex_reg_write
 
-        #debug_ex_branch.next = ex_branch
-        #debug_ex_dat_d.next = ex_dat_d
-        #debug_ex_flush_id.next = ex_flush_id
-        #debug_ex_mem_read.next = ex_mem_read
-        #debug_ex_mem_write.next = ex_mem_write
-        #debug_ex_program_counter.next = ex_program_counter
-        #debug_ex_transfer_size.next = ex_transfer_size
+        debug_ex_branch.next = ex_branch
+        debug_ex_dat_d.next = ex_dat_d
+        debug_ex_flush_id.next = ex_flush_id
+        debug_ex_mem_read.next = ex_mem_read
+        debug_ex_mem_write.next = ex_mem_write
+        debug_ex_program_counter.next = ex_program_counter
+        debug_ex_transfer_size.next = ex_transfer_size
 
-        #debug_ex_dat_a.next = ex_dat_a
-        #debug_ex_dat_b.next = ex_dat_b
-        #debug_ex_instruction.next = ex_instruction
-        #debug_ex_reg_a.next = ex_reg_a
-        #debug_ex_reg_b.next = ex_reg_b
+        debug_ex_dat_a.next = ex_dat_a
+        debug_ex_dat_b.next = ex_dat_b
+        debug_ex_instruction.next = ex_instruction
+        debug_ex_reg_a.next = ex_reg_a
+        debug_ex_reg_b.next = ex_reg_b
 
-        #debug_mm_alu_result.next = mm_alu_result
-        #debug_mm_mem_read.next = mm_mem_read
-        #debug_mm_reg_d.next = mm_reg_d
-        #debug_mm_reg_write.next = mm_reg_write
-        #debug_mm_transfer_size.next = mm_transfer_size
+        debug_mm_alu_result.next = mm_alu_result
+        debug_mm_mem_read.next = mm_mem_read
+        debug_mm_reg_d.next = mm_reg_d
+        debug_mm_reg_write.next = mm_reg_write
+        debug_mm_transfer_size.next = mm_transfer_size
 
-    return instances()
+    if DEBUG:
+        return ftch, deco, exeu, memu, debug_output
+    return ftch, deco, exeu, memu
 
 def bench():
     clock = Signal(False)
@@ -470,8 +483,6 @@ def bench():
             iaddr = int(imem_addr_out)
             if iaddr >= len(imem):
                 break
-            #print 'cycle %d: imem addr:=0x%x code:=0x%08x\n' % (
-                    #i, iaddr, imem[iaddr/4])
             word = (((imem[iaddr]%256)<<24)
                    +((imem[iaddr+1]%256)<<16)
                    +((imem[iaddr+2]%256)<<8)
@@ -507,7 +518,6 @@ if __name__ == '__main__':
     imem_ena_out = Signal(False)
 
     kw = dict(
-        func=MyBlazeCore,
         clock=clock,
         reset=reset,
         dmem_ena_in=dmem_ena_in,
@@ -522,8 +532,8 @@ if __name__ == '__main__':
         imem_addr_out=imem_addr_out,
         imem_ena_out=imem_ena_out,
     )
-    toVHDL(**kw)
-    toVerilog(**kw)
+    toVHDL(MyBlazeCore, **kw)
+    toVerilog(MyBlazeCore, **kw)
   else:
     tb = bench()
     #tb = traceSignals(bench)

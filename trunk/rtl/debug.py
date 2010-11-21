@@ -12,7 +12,6 @@
 """
 
 import re
-DEBUG_VERBOSE = 0
 
 __re_dis=re.compile(r' *(?P<addr>[0-9a-f]+):\s+(?P<opcode>[0-9a-f]{8})\s+.*')
 __dissembly = open('rom.dump').readlines()

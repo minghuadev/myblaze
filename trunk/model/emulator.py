@@ -316,10 +316,10 @@ _min = _signed32(__min)
 
 class MyBlazeEmulator(object):
 
-    def __init__(self, filename='rom.vmem'):
+    def __init__(self, filename='rom.vmem', max_steps=1000):
         ram = read_vmem(filename)
         print 'size=%d' % len(ram)
-        fetch(ram, max_steps=1000)
+        fetch(ram, max_steps=max_steps)
 
 def addi(d, a, i, k, c, r, m, **kw):
     x = _signed32(r[a]) + _signed32(i) + (bool(c) & m[0])
@@ -420,6 +420,7 @@ def load(b, r, i=None, **kw):
 def storei(d, a, i, op, r, ram, **kw):
     addr = r[a] + i
     if addr<0:
+        # UART Emulation
         if addr == -64:
             sys.stdout.write(chr(r[d] & 0xff))
             sys.stdout.flush()
@@ -690,7 +691,7 @@ def read_vmem(filename, bank=4, width=8):
 
 import sys
 if __name__ == '__main__':
-    MyBlazeEmulator(sys.argv[1])
+    MyBlazeEmulator(sys.argv[1], max_steps=2000)
 
 ### EOF ###
 # vim:smarttab:sts=4:ts=4:sw=4:et:ai:tw=80:

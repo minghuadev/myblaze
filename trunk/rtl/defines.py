@@ -11,7 +11,7 @@
     :revision: $Id$
 """
 
-from myhdl import enum
+from myhdl import enum, instances
 
 DEBUG = True
 DEBUG_VERBOSE = 1

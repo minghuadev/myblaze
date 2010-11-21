@@ -16,7 +16,7 @@ from myhdl import *
 from defines import *
 from functions import *
 from gprf import *
-from debug import *
+#from debug import *
 
 def Decoder(
         # Inputs
@@ -61,8 +61,8 @@ def Decoder(
         of_fwd_reg_d,
         of_fwd_reg_write,
 
-        # XXX: if __debug__:
-        #of_instruction=False,
+        # Ports only for debug
+        of_instruction=0,
     ):
     """
     Python System Model of the OF Stage
@@ -178,21 +178,13 @@ def Decoder(
             of_fwd_reg_d.next = mm_reg_d
             of_fwd_reg_write.next = mm_reg_write
 
-        #if __debug__:
-            #if 0: # DEBUG_VERBOSE:
-                #print 'OF reged:', of_reg_write, of_reg_d,' ra:', of_reg_a
-                #print 'OF reged pc:', of_r_program_counter
-                #print 'OF rd:', mm_reg_write, mm_reg_d, wb_dat_d,
-                #print ' ra:', imem_data_in[21:16]
-                #print 'OF pc:', of_comb_program_counter
-
     @always_comb
     def regout():
         of_hazard.next = of_r_hazard
         of_mem_read.next = of_r_mem_read
         of_reg_d.next = of_r_reg_d
-        #if __debug__:
-        #of_instruction.next = of_r_instruction
+        if __debug__:
+            of_instruction.next = of_r_instruction
 
     @always_comb
     def comb():
@@ -205,10 +197,9 @@ def Decoder(
         r_immediate_high = intbv(0)[16:]
         r_has_imm_high = False
         r_reg_d = intbv(0)[5:]
-        # Local
+        # Local Variables
         r_hazard = False
         immediate = intbv(0)[32:]
-        #r_immediate_high = intbv(0)[16:]
         immediate_low = intbv(0)[16:]
         instruction = intbv(0)[32:]
         mem_result = intbv(0)[32:]
@@ -221,7 +212,6 @@ def Decoder(
         if mm_mem_read:
             mem_result[:] = align_mem_load(dmem_data_in, mm_transfer_size,
                                            mm_alu_result[2:])
-            #print 'of: load %x' % mem_result
         else:
             mem_result[:] = mm_alu_result
 
@@ -493,13 +483,13 @@ if __name__ == '__main__':
     reset = Signal(False)
     enable = Signal(False)
 
-    dmem_data_in = Signal(intbv(0)[32:])
-    imem_data_in = Signal(intbv(0)[32:])
+    dmem_data_in = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+    imem_data_in = Signal(intbv(0)[CFG_IMEM_WIDTH:])
     if_program_counter = Signal(intbv(0)[CFG_IMEM_SIZE:])
     ex_flush_id = Signal(False)
-    mm_alu_result = Signal(intbv(0)[32:])
+    mm_alu_result = Signal(intbv(0)[CFG_DMEM_WIDTH:])
     mm_mem_read = Signal(False)
-    mm_reg_d = Signal(intbv(0)[5:])
+    mm_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     mm_reg_write = Signal(False)
     mm_transfer_size = Signal(transfer_size_type.WORD)
     gprf_dat_a = Signal(intbv(0)[CFG_DMEM_WIDTH:])
@@ -513,19 +503,25 @@ if __name__ == '__main__':
     of_carry_keep = Signal(False)
     of_delay = Signal(False)
     of_hazard = Signal(False)
-    of_immediate = Signal(intbv(0)[32:])
+    of_immediate = Signal(intbv(0)[CFG_DMEM_WIDTH:])
     of_mem_read = Signal(False)
     of_mem_write = Signal(False)
     of_operation = Signal(False)
     of_program_counter = Signal(intbv(0)[CFG_IMEM_SIZE:])
-    of_reg_a = Signal(intbv(0)[5:])
-    of_reg_b = Signal(intbv(0)[5:])
-    of_reg_d = Signal(intbv(0)[5:])
+    of_reg_a = Signal(intbv(0)[CFG_GPRF_SIZE:])
+    of_reg_b = Signal(intbv(0)[CFG_GPRF_SIZE:])
+    of_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
     of_reg_write = Signal(False)
     of_transfer_size = Signal(transfer_size_type.WORD)
+    of_fwd_mem_result = Signal(intbv(0)[CFG_DMEM_WIDTH:])
+    of_fwd_reg_d = Signal(intbv(0)[CFG_GPRF_SIZE:])
+    of_fwd_reg_write = Signal(False)
+    if __debug__:
+        of_instruction = Signal(intbv(0)[CFG_IMEM_WIDTH:])
+    # End Ports only for debug
+
 
     kw = dict(
-        Decoder,
         clock=clock,
         reset=reset,
         enable=enable,
@@ -559,9 +555,13 @@ if __name__ == '__main__':
         of_reg_d=of_reg_d,
         of_reg_write=of_reg_write,
         of_transfer_size=of_transfer_size,
+        of_fwd_mem_result=of_fwd_mem_result,
+        of_fwd_reg_d=of_fwd_reg_d,
+        of_fwd_reg_write=of_fwd_reg_write,
+
     )
-    toVerilog(**kw)
-    toVHDL(**kw)
+    toVerilog(Decoder, **kw)
+    toVHDL(Decoder, **kw)
     
 
 ### EOF ###

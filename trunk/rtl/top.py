@@ -42,79 +42,79 @@ def Program(data_out, data_in, address, write, enable, clock, *args, **kw):
     
 def SysTop(txd_line, rxd_line, txd_line2, rxd_line2, leds, reset, clock,
 
-        # if __debug__:
-        debug_if_program_counter,
+        # Ports only for debug
+        debug_if_program_counter=0,
 
-        debug_of_alu_op,
-        debug_of_alu_src_a,
-        debug_of_alu_src_b,
-        debug_of_branch_cond,
-        debug_of_carry,
-        debug_of_carry_keep,
-        debug_of_delay,
-        debug_of_hazard,
-        debug_of_immediate,
-        debug_of_instruction,
-        debug_of_mem_read,
-        debug_of_mem_write,
-        debug_of_operation,
-        debug_of_program_counter,
-        debug_of_reg_a,
-        debug_of_reg_b,
-        debug_of_reg_d,
-        debug_of_reg_write,
-        debug_of_transfer_size,
+        debug_of_alu_op=0,
+        debug_of_alu_src_a=0,
+        debug_of_alu_src_b=0,
+        debug_of_branch_cond=0,
+        debug_of_carry=0,
+        debug_of_carry_keep=0,
+        debug_of_delay=0,
+        debug_of_hazard=0,
+        debug_of_immediate=0,
+        debug_of_instruction=0,
+        debug_of_mem_read=0,
+        debug_of_mem_write=0,
+        debug_of_operation=0,
+        debug_of_program_counter=0,
+        debug_of_reg_a=0,
+        debug_of_reg_b=0,
+        debug_of_reg_d=0,
+        debug_of_reg_write=0,
+        debug_of_transfer_size=0,
 
-        debug_of_fwd_mem_result,
-        debug_of_fwd_reg_d,
-        debug_of_fwd_reg_write,
+        debug_of_fwd_mem_result=0,
+        debug_of_fwd_reg_d=0,
+        debug_of_fwd_reg_write=0,
 
-        debug_gprf_dat_a,
-        debug_gprf_dat_b,
-        debug_gprf_dat_d,
+        debug_gprf_dat_a=0,
+        debug_gprf_dat_b=0,
+        debug_gprf_dat_d=0,
 
-        debug_ex_alu_result,
-        debug_ex_reg_d,
-        debug_ex_reg_write,
+        debug_ex_alu_result=0,
+        debug_ex_reg_d=0,
+        debug_ex_reg_write=0,
 
-        debug_ex_branch,
-        debug_ex_dat_d,
-        debug_ex_flush_id,
-        debug_ex_mem_read,
-        debug_ex_mem_write,
-        debug_ex_program_counter,
-        debug_ex_transfer_size,
+        debug_ex_branch=0,
+        debug_ex_dat_d=0,
+        debug_ex_flush_id=0,
+        debug_ex_mem_read=0,
+        debug_ex_mem_write=0,
+        debug_ex_program_counter=0,
+        debug_ex_transfer_size=0,
 
-        debug_ex_dat_a,
-        debug_ex_dat_b,
-        debug_ex_instruction,
-        debug_ex_reg_a,
-        debug_ex_reg_b,
+        debug_ex_dat_a=0,
+        debug_ex_dat_b=0,
+        debug_ex_instruction=0,
+        debug_ex_reg_a=0,
+        debug_ex_reg_b=0,
 
-        debug_mm_alu_result,
-        debug_mm_mem_read,
-        debug_mm_reg_d,
-        debug_mm_reg_write,
-        debug_mm_transfer_size,
+        debug_mm_alu_result=0,
+        debug_mm_mem_read=0,
+        debug_mm_reg_d=0,
+        debug_mm_reg_write=0,
+        debug_mm_transfer_size=0,
 
-        debug_dmem_ena_in,
-        debug_dmem_data_in,
-        debug_dmem_data_out,
-        debug_dmem_sel_out,
-        debug_dmem_we_out,
-        debug_dmem_addr_out,
-        debug_dmem_ena_out,
-        debug_dmem_ena,
+        debug_dmem_ena_in=0,
+        debug_dmem_data_in=0,
+        debug_dmem_data_out=0,
+        debug_dmem_sel_out=0,
+        debug_dmem_we_out=0,
+        debug_dmem_addr_out=0,
+        debug_dmem_ena_out=0,
+        debug_dmem_ena=0,
 
-        debug_imem_data_in,
-        debug_imem_data_out,
-        debug_imem_sel_out,
-        debug_imem_we_out,
-        debug_imem_addr_out,
-        debug_imem_ena,
-        debug_imem_ena_out,
+        debug_imem_data_in=0,
+        debug_imem_data_out=0,
+        debug_imem_sel_out=0,
+        debug_imem_we_out=0,
+        debug_imem_addr_out=0,
+        debug_imem_ena=0,
+        debug_imem_ena_out=0,
 
-        size=4):
+        size=4, DEBUG=True):
     rx_data = Signal(intbv(0)[32:])
     rx_avail = Signal(False)
     rx_error = Signal(False)
@@ -184,7 +184,7 @@ def SysTop(txd_line, rxd_line, txd_line2, rxd_line2, leds, reset, clock,
         imem_addr_out=imem_addr_out,
         imem_ena_out=imem_ena_out,
 
-        # if __debug__:
+        # Ports only for debug
         debug_if_program_counter=debug_if_program_counter,
 
         debug_of_alu_op=debug_of_alu_op,
@@ -238,6 +238,8 @@ def SysTop(txd_line, rxd_line, txd_line2, rxd_line2, leds, reset, clock,
         debug_mm_reg_d=debug_mm_reg_d,
         debug_mm_reg_write=debug_mm_reg_write,
         debug_mm_transfer_size=debug_mm_transfer_size,
+
+        DEBUG=DEBUG,
     )
 
     uart = UART(rx_data, rx_avail, rx_error, read_en,
@@ -260,16 +262,14 @@ def SysTop(txd_line, rxd_line, txd_line2, rxd_line2, leds, reset, clock,
         tx_data.next = dmem_data_out
         if dmem_addr_out < 2**size:
             dmem_ena.next = dmem_ena_out
-            #dmem_ena_in.next = True
             write_en.next = False
-        elif dmem_we_out and dmem_addr_out[28:] >= 0xfffffb0:
+        elif dmem_we_out and dmem_addr_out[28:] >= 0xfffffc0:
             dmem_ena.next = False
-            #dmem_ena_in.next = not tx_busy
+            dmem_ena_in.next = not tx_busy
             write_en.next = True
         else:
             write_en.next = False
             dmem_ena.next = False
-            #dmem_ena_in.next = True
 
         #leds.next = concat(led_reg[4:], led_low[4:])
         leds.next = led_reg[8:]
@@ -297,19 +297,19 @@ def SysTop(txd_line, rxd_line, txd_line2, rxd_line2, leds, reset, clock,
             uart_rxd2.next = rxd_line2
             read_en.next = False
             count.next = (count+1)%(2**20)
-            if count == 0:
-                led_low.next = concat(led_low[31:], led_low[31])
+            #if count == 0:
+                #led_low.next = concat(led_low[31:], led_low[31])
 
             #if write_en and not tx_busy:
                 #led_reg.next = concat(led_reg[31:], led_reg[31])
-            #if dmem_we_out and dmem_addr_out[28:] == 0xFFFFFB0:
-                #led_reg.next = dmem_data_out
-            #else:
-                #led_reg.next = led_reg
+            if dmem_we_out and dmem_addr_out[28:] == 0xFFFFFB0:
+                led_reg.next = dmem_data_out
+            else:
+                led_reg.next = led_reg
             #led_reg.next = concat(dmem_ena_in, dmem_we_out, dmem_ena_out,
                 #write_en,)
-            if imem_addr_out == 0x244:
-                led_reg.next = 0xff
+            #if imem_addr_out == 0x244:
+                #led_reg.next = 0xff
 
 
     @always_comb
@@ -331,7 +331,10 @@ def SysTop(txd_line, rxd_line, txd_line2, rxd_line2, leds, reset, clock,
         debug_imem_ena.next = imem_ena
         debug_imem_ena_out.next = imem_ena_out
 
-    return instances()
+    if DEBUG:
+        return imem, dmem, core, uart, uart2, glue, run, debug_output
+    
+    return imem, dmem, core, uart, uart2, glue, run
 
 import sys
 from numpy import log2
@@ -424,7 +427,7 @@ def TopBench():
 
     top = SysTop(txd_line, rxd_line, txd_line2, rxd_line2, leds, reset, clock,
     
-        # if __debug__:
+        # Ports only for debug
         debug_if_program_counter,
 
         debug_of_alu_op,
@@ -496,7 +499,7 @@ def TopBench():
         debug_imem_ena,
         debug_imem_ena_out,
 
-            size=size)
+        size=size)
         
     @instance
     def clockgen():
@@ -513,14 +516,14 @@ def TopBench():
         reset.next = True
         yield delay(53)
         reset.next = False
-        for i in range(2000):
+        for i in range(3000):
             yield clock.negedge
         reset.next = False
         yield delay(37)
         reset.next = True
         yield delay(53)
         reset.next = False
-        for i in range(2000):
+        for i in range(3000):
             yield clock.negedge
 
         raise StopSimulation
@@ -539,9 +542,9 @@ def TopBench():
             if debug_dmem_addr_out == 0xffffffc0:
                 #if debug_dmem_sel_out == 0b1000:
                 if debug_dmem_we_out:
-                    #sys.stdout.write(chr(int(debug_dmem_data_out[8:])))
-                    #sys.stdout.flush()
-                    print int(debug_dmem_data_out[8:])
+                    sys.stdout.write(chr(int(debug_dmem_data_out[8:])))
+                    sys.stdout.flush()
+                    #print int(debug_dmem_data_out[8:])
                     #print 'output: %d' % debug_dmem_data_out[8:]
 
 
@@ -601,11 +604,11 @@ def TopBench():
     return instances()
     
 if __name__ == '__main__':
-  if 1:
-    #tb = traceSignals(TopBench)
-    #Simulation(tb).run()
-    conversion.verify.simulator = 'icarus'
-    conversion.verify(TopBench)
+  if 0:
+    tb = traceSignals(TopBench)
+    Simulation(tb).run()
+    #conversion.verify.simulator = 'icarus'
+    #conversion.verify(TopBench)
   else:
     prepare()
     txd_line = Signal(False)
@@ -618,7 +621,9 @@ if __name__ == '__main__':
     size = int(log2(int(sys.argv[1]))) if len(sys.argv) > 1 else 4
     print 'size=%s' % size
     #toVHDL(uart_test_top, txd_line, rxd_line, leds, reset, clock)
-    toVerilog(SysTop, txd_line, rxd_line, txd_line2, rxd_line2, leds, reset, clock, size=size)
+    toVerilog(SysTop, txd_line, rxd_line, txd_line2, rxd_line2, leds, reset,
+            clock, size=size, DEBUG=False)
+        
         
 
 ### EOF ###

@@ -66,9 +66,6 @@ def FetchUnit(
             if_r_program_counter.next = 0
         elif enable:
             if_r_program_counter.next = if_comb_r_program_counter
-        #if __debug__:
-            #print 'pc:=0x%x, enable:=%s, reset:=%s' % (
-                #if_comb_r_program_counter, enable, reset)
 
     @always_comb
     def regout():

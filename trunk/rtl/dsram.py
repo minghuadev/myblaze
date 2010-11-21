@@ -5,9 +5,9 @@
 
     Dual port synchronous ram
     
-    :copyright: Copyright (c) 2010 Jian Luo.
-    :author-email: jian <dot> luo <dot> cn <at> gmail <dot> com.
-    :license: BSD, see LICENSE for details.
+    :copyright: Copyright (c) 2010 Jian Luo
+    :author-email: jian.luo.cn(at_)gmail.com
+    :license: LGPL, see LICENSE for details
     :revision: $Id$
 """
 

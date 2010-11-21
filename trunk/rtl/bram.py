@@ -5,9 +5,9 @@
 
     Block RAM
     
-    :copyright: Copyright (c) 2010 Jian Luo.
-    :author-email: jian <dot> luo <dot> cn <at> gmail <dot> com.
-    :license: BSD, see LICENSE for details.
+    :copyright: Copyright (c) 2010 Jian Luo
+    :author-email: jian.luo.cn(at_)gmail.com
+    :license: LGPL, see LICENSE for details
     :revision: $Id$
 """
 
@@ -83,12 +83,12 @@ def BankedBRAM(
         width=32,
         bank_size=2,
         size=16,
-        to_verilog=False,
+        to_verilog=1,
         filename_pattern='',
         ):
     # XXX: Verilog just don't allow dynamic register slicing
     # have to fix ram shape to 4x8bit
-    if to_verilog:
+    if to_verilog == 1:
         width=32
         bank_size=2
     bank_count = 2 ** bank_size
@@ -123,8 +123,7 @@ def BankedBRAM(
             #else:
                 #print 'READ %x' % int(data_out)
 
-    #if to_verilog:
-    if 1:
+    if to_verilog == 1:
         @always_comb
         def dumbass_reassemble():
             bank_addr.next = address[:bank_size]

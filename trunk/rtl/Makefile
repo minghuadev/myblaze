@@ -1,4 +1,4 @@
-# Makefile by Takar
+# Makefile by rockee
 
 SRCS=testbench.c
 ELFFILE=rom
